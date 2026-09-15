@@ -1,0 +1,53 @@
+---
+- name: Setup cluster nodes
+  hosts: cluster_nodes
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+    
+    - name: Install docker and nginx
+      apt:
+        name: 
+          - docker.io
+          - nginx
+        state: present
+        update_cache: yes
+
+    - name: Add ubuntu user to docker group
+      user: 
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Start and enable Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+    
+    - name: Download and install Kind
+      shell: |
+        curl -Lo /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-linux-amd64
+        chmod +x /usr/local/bin/kind
+
+- name: Setup Client Node (Kubectl)
+  hosts: client_node
+  become: yes
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        
+    - name: Download and install Kubectl
+      shell: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl

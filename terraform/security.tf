@@ -33,6 +33,14 @@ resource "aws_security_group" "k8s_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "allow Kubernetes API"
+    to_port     = 6443
+    from_port   = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["13.201.93.142/32"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

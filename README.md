@@ -43,13 +43,13 @@ flowchart TD
     Client -->|HTTPS :6443| Node2
     Client -->|HTTPS :6443| Node3
     
-    linkStyle default stroke:#000,stroke-width:2px,color:#000;
-    classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
-    classDef cluster fill:#bbf,stroke:#333,stroke-width:2px,color:#000;
-    classDef tool fill:#fffacd,stroke:#333,stroke-width:2px,color:#000;
-    style AWS_VPC fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
-    style Security_Group fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
-    style K8s_Clusters fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
+    linkStyle default stroke:black,stroke-width:2px,color:black;
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:black;
+    classDef cluster fill:#bbf,stroke:#333,stroke-width:2px,color:black;
+    classDef tool fill:#fffacd,stroke:#333,stroke-width:2px,color:black;
+    style AWS_VPC fill:#e6e6fa,color:black,stroke:#333,stroke-width:2px;
+    style Security_Group fill:#e6e6fa,color:black,stroke:#333,stroke-width:2px;
+    style K8s_Clusters fill:#e6e6fa,color:black,stroke:#333,stroke-width:2px;
     
     class Client client;
     class Node1,Node2,Node3 cluster;

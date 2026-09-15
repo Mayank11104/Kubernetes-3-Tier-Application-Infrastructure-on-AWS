@@ -1,4 +1,4 @@
-# 🚀 Kubernetes Multi-Cluster Infrastructure on AWS — Terraform + Ansible
+# Kubernetes Multi-Cluster Infrastructure on AWS — Terraform + Ansible
 
 This repository contains the complete Infrastructure-as-Code (IaC) and Configuration Management to deploy a highly secure, multi-cluster Kubernetes environment on AWS. It is built entirely from scratch using **Terraform** for provisioning and **Ansible** for configuration, targeting a secure Hub-and-Spoke management architecture.
 
@@ -12,14 +12,14 @@ Rather than manually logging into cluster nodes, a centralized **Kubernetes Mana
 ### Architecture Diagram
 
 ```mermaid
-graph TD
-    subgraph AWS VPC
+flowchart TD
+    subgraph AWS_VPC ["AWS VPC"]
         direction TB
         
-        subgraph Security Group
+        subgraph Security_Group ["Security Group"]
             Client[Kubernetes Management Node<br/>EC2 t3.micro<br/>IP: 13.201.xxxx]
             
-            subgraph K8s Clusters
+            subgraph K8s_Clusters ["K8s Clusters"]
                 Node1[Cluster Node 1<br/>EC2 t3.small<br/>IP: 3.108.xxxx]
                 Node2[Cluster Node 2<br/>EC2 t3.small<br/>IP: 15.252.xxxx]
                 Node3[Cluster Node 3<br/>EC2 t3.small<br/>IP: 13.203.xxxx]
@@ -32,8 +32,12 @@ graph TD
     Client -->|HTTPS :6443| Node2
     Client -->|HTTPS :6443| Node3
     
-    classDef client fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef cluster fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
+    classDef cluster fill:#bbf,stroke:#333,stroke-width:2px,color:#000;
+    style AWS_VPC fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
+    style Security_Group fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
+    style K8s_Clusters fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
+    
     class Client client;
     class Node1,Node2,Node3 cluster;
 ```

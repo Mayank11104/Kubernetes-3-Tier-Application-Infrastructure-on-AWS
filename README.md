@@ -13,6 +13,14 @@ Rather than manually logging into cluster nodes, a centralized **Kubernetes Mana
 
 ```mermaid
 flowchart TD
+    Admin((DevOps Engineer))
+    
+    TF{{Terraform}}
+    ANS{{Ansible}}
+    
+    Admin -->|1. Provisions Infra| TF
+    Admin -->|2. Configures Nodes| ANS
+    
     subgraph AWS_VPC ["AWS VPC"]
         direction TB
         
@@ -27,19 +35,25 @@ flowchart TD
         end
     end
     
-    Admin((DevOps Engineer)) -->|SSH :22| Client
+    TF -.->|Creates| AWS_VPC
+    ANS -.->|Bootstraps| Client
+    ANS -.->|Bootstraps| K8s_Clusters
+    
     Client -->|HTTPS :6443| Node1
     Client -->|HTTPS :6443| Node2
     Client -->|HTTPS :6443| Node3
     
+    linkStyle default stroke:#000,stroke-width:2px,color:#000;
     classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:#000;
     classDef cluster fill:#bbf,stroke:#333,stroke-width:2px,color:#000;
+    classDef tool fill:#fffacd,stroke:#333,stroke-width:2px,color:#000;
     style AWS_VPC fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
     style Security_Group fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
     style K8s_Clusters fill:#e6e6fa,color:#000,stroke:#333,stroke-width:2px;
     
     class Client client;
     class Node1,Node2,Node3 cluster;
+    class TF,ANS tool;
 ```
 
 ### Provisioned Instances

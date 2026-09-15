@@ -12,48 +12,53 @@ Rather than manually logging into cluster nodes, a centralized **Kubernetes Mana
 ### Architecture Diagram
 
 ```mermaid
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#1f2937", "primaryTextColor": "#ffffff", "primaryBorderColor": "#6b7280", "lineColor": "#9ca3af", "fontSize": "14px"}}}%%
 flowchart TD
-    Admin((DevOps Engineer))
-    
-    TF{{Terraform}}
-    ANS{{Ansible}}
-    
-    Admin -->|1. Provisions Infra| TF
-    Admin -->|2. Configures Nodes| ANS
-    
-    subgraph AWS_VPC ["AWS VPC"]
-        direction TB
-        
-        subgraph Security_Group ["Security Group"]
-            Client[Kubernetes Management Node<br/>EC2 t3.micro<br/>IP: 13.201.xxxx]
-            
-            subgraph K8s_Clusters ["K8s Clusters"]
-                Node1[Cluster Node 1<br/>EC2 t3.small<br/>IP: 3.108.xxxx]
-                Node2[Cluster Node 2<br/>EC2 t3.small<br/>IP: 15.252.xxxx]
-                Node3[Cluster Node 3<br/>EC2 t3.small<br/>IP: 13.203.xxxx]
+    Admin(["👤 DevOps Engineer"])
+
+    subgraph ControlPlane["⚙️ Control Plane — Local / WSL"]
+        direction LR
+        TF["🧱 Terraform<br/><small>Provisions infra</small>"]
+        ANS["🔧 Ansible<br/><small>Configures nodes</small>"]
+    end
+
+    Admin -->|"terraform apply"| TF
+    Admin -->|"ansible-playbook"| ANS
+
+    subgraph VPC["☁️ AWS VPC"]
+        subgraph SG["🔒 Security Group — Port 6443 locked to Mgmt Node IP only"]
+            MGMT["🖥️ Kubernetes Management Node<br/><small>EC2 t3.micro · 13.201.xxxx</small><br/><small>kubectl + merged kubeconfig</small>"]
+
+            subgraph Clusters["Kind Clusters — API bound to 0.0.0.0"]
+                direction LR
+                N1["☸️ cluster-node1<br/><small>EC2 t3.small · 3.108.xxxx</small>"]
+                N2["☸️ cluster-node2<br/><small>EC2 t3.small · 15.252.xxxx</small>"]
+                N3["☸️ cluster-node3<br/><small>EC2 t3.small · 13.203.xxxx</small>"]
             end
         end
     end
-    
-    TF -.->|Creates| AWS_VPC
-    ANS -.->|Bootstraps| Client
-    ANS -.->|Bootstraps| K8s_Clusters
-    
-    Client -->|HTTPS :6443| Node1
-    Client -->|HTTPS :6443| Node2
-    Client -->|HTTPS :6443| Node3
-    
-    linkStyle default stroke:black,stroke-width:2px,color:black;
-    classDef client fill:#f9f,stroke:#333,stroke-width:2px,color:black;
-    classDef cluster fill:#bbf,stroke:#333,stroke-width:2px,color:black;
-    classDef tool fill:#fffacd,stroke:#333,stroke-width:2px,color:black;
-    style AWS_VPC fill:#e6e6fa,color:black,stroke:#333,stroke-width:2px;
-    style Security_Group fill:#e6e6fa,color:black,stroke:#333,stroke-width:2px;
-    style K8s_Clusters fill:#e6e6fa,color:black,stroke:#333,stroke-width:2px;
-    
-    class Client client;
-    class Node1,Node2,Node3 cluster;
-    class TF,ANS tool;
+
+    TF -.->|provisions| VPC
+    ANS -.->|bootstraps| MGMT
+    ANS -.->|bootstraps| Clusters
+
+    MGMT ==>|"HTTPS :6443<br/>(cert SAN patched)"| N1
+    MGMT ==>|"HTTPS :6443"| N2
+    MGMT ==>|"HTTPS :6443"| N3
+
+    classDef tool fill:#374151,stroke:#9ca3af,color:#f9fafb,stroke-width:1.5px
+    classDef mgmt fill:#7c3aed,stroke:#c4b5fd,color:#ffffff,stroke-width:2px
+    classDef node fill:#2563eb,stroke:#93c5fd,color:#ffffff,stroke-width:1.5px
+    classDef vpc fill:#111827,stroke:#4b5563,color:#e5e7eb,stroke-width:1.5px
+    classDef sg fill:#1f2937,stroke:#f59e0b,color:#fef3c7,stroke-width:1.5px,stroke-dasharray: 4 3
+    classDef cluster fill:#0f172a,stroke:#4b5563,color:#e5e7eb,stroke-width:1px
+
+    class TF,ANS tool
+    class MGMT mgmt
+    class N1,N2,N3 node
+    class VPC vpc
+    class SG sg
+    class Clusters cluster
 ```
 
 ### Provisioned Instances

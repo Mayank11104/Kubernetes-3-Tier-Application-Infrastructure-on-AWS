@@ -25,3 +25,4 @@ override.tf.json
 # Ignore the plan output of command: terraform plan -out=tfplan
 *tfplan*
 Ansible/inventory.ini
+Ansible/fetched_configs/

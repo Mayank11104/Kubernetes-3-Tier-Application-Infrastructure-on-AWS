@@ -1,0 +1,43 @@
+---
+- name: Fetch kubeconfig from cluster nodes
+  hosts: cluster_nodes
+  become: no
+  tasks:
+    - name: Fetch kubeconfig to local Ansible control node
+      fetch:
+        src: /home/ubuntu/.kube/config
+        dest: "./fetched_configs/{{ inventory_hostname }}_config"
+        flat: yes
+
+- name: Setup Client Node kubeconfigs
+  hosts: client_node
+  become: no
+  tasks:
+    - name: Ensure .kube directory exists
+      file:
+        path: /home/ubuntu/.kube
+        state: directory
+        mode: '0755'
+
+    - name: Copy configs to client node
+      copy:
+        src: "./fetched_configs/{{ item }}_config"
+        dest: "/home/ubuntu/.kube/config-{{ item }}"
+      loop:
+        - cluster-node1
+        - cluster-node2
+        - cluster-node3
+
+    - name: Update IP addresses in the kubeconfig files
+      shell: |
+        sed -i 's/0.0.0.0/{{ hostvars[item].ansible_host }}/g' /home/ubuntu/.kube/config-{{ item }}
+      loop:
+        - cluster-node1
+        - cluster-node2
+        - cluster-node3
+
+    - name: Merge Kubeconfigs in bashrc
+      lineinfile:
+        path: /home/ubuntu/.bashrc
+        line: "export KUBECONFIG=/home/ubuntu/.kube/config-cluster-node1:/home/ubuntu/.kube/config-cluster-node2:/home/ubuntu/.kube/config-cluster-node3"
+        state: present

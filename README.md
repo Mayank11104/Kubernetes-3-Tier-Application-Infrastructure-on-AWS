@@ -16,7 +16,7 @@ Rather than manually logging into cluster nodes, a centralized **Kubernetes Mana
 flowchart TD
     Admin(["👤 DevOps Engineer"])
 
-    subgraph ControlPlane["⚙️ Control Plane — Local / WSL"]
+    subgraph AdminBox["🛠️ Automation / Admin Workstation — Local / WSL"]
         direction LR
         TF["🧱 Terraform<br/><small>Provisions infra</small>"]
         ANS["🔧 Ansible<br/><small>Configures nodes</small>"]
@@ -26,39 +26,43 @@ flowchart TD
     Admin -->|"ansible-playbook"| ANS
 
     subgraph VPC["☁️ AWS VPC"]
-        subgraph SG["🔒 Security Group — Port 6443 locked to Mgmt Node IP only"]
-            MGMT["🖥️ Kubernetes Management Node<br/><small>EC2 t3.micro · 13.201.xxxx</small><br/><small>kubectl + merged kubeconfig</small>"]
+        MGMT["🖥️ Kubernetes Management Node<br/><small>EC2 t3.micro · 13.201.xxxx</small><br/><small>kubectl + merged kubeconfig</small>"]
 
-            subgraph Clusters["Kind Clusters — API bound to 0.0.0.0"]
-                direction LR
-                N1["☸️ cluster-node1<br/><small>EC2 t3.small · 3.108.xxxx</small>"]
-                N2["☸️ cluster-node2<br/><small>EC2 t3.small · 15.252.xxxx</small>"]
-                N3["☸️ cluster-node3<br/><small>EC2 t3.small · 13.203.xxxx</small>"]
-            end
+        subgraph SG["🔐 AWS Security Group<br/>Kubernetes API :6443 restricted to Management Node"]
+            direction LR
+            N1["☸️ cluster-node1<br/><small>EC2 t3.small · 3.108.xxxx</small>"]
+            N2["☸️ cluster-node2<br/><small>EC2 t3.small · 15.252.xxxx</small>"]
+            N3["☸️ cluster-node3<br/><small>EC2 t3.small · 13.203.xxxx</small>"]
         end
+
+        SGNOTE["☸️ Kind Kubernetes Clusters<br/><small>API exposed on EC2 :6443</small>"]
     end
 
     TF -.->|provisions| VPC
     ANS -.->|bootstraps| MGMT
-    ANS -.->|bootstraps| Clusters
+    ANS -.->|bootstraps| SG
 
-    MGMT ==>|"HTTPS :6443<br/>(cert SAN patched)"| N1
-    MGMT ==>|"HTTPS :6443"| N2
-    MGMT ==>|"HTTPS :6443"| N3
+    MGMT ==>|"HTTPS :6443<br/>TLS SAN configured"| N1
+    MGMT ==>|"HTTPS :6443<br/>TLS SAN configured"| N2
+    MGMT ==>|"HTTPS :6443<br/>TLS SAN configured"| N3
+
+    SGNOTE -.- N1
+    SGNOTE -.- N2
+    SGNOTE -.- N3
 
     classDef tool fill:#374151,stroke:#9ca3af,color:#f9fafb,stroke-width:1.5px
     classDef mgmt fill:#7c3aed,stroke:#c4b5fd,color:#ffffff,stroke-width:2px
     classDef node fill:#2563eb,stroke:#93c5fd,color:#ffffff,stroke-width:1.5px
     classDef vpc fill:#111827,stroke:#4b5563,color:#e5e7eb,stroke-width:1.5px
     classDef sg fill:#1f2937,stroke:#f59e0b,color:#fef3c7,stroke-width:1.5px,stroke-dasharray: 4 3
-    classDef cluster fill:#0f172a,stroke:#4b5563,color:#e5e7eb,stroke-width:1px
+    classDef note fill:none,stroke:none,color:#9ca3af
 
     class TF,ANS tool
     class MGMT mgmt
     class N1,N2,N3 node
     class VPC vpc
     class SG sg
-    class Clusters cluster
+    class SGNOTE note
 ```
 
 ### Provisioned Instances
